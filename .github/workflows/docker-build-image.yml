@@ -33,4 +33,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ghcr.io/texnevada/ffxiv-pose-img-embedder:latest
+          tags: ghcr.io/texnevada/ffxiv-pose-img-embedder/web-app:latest
