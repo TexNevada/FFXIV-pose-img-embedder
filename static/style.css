@@ -177,3 +177,51 @@ button:hover {
 button:active {
     transform: scale(0.98);
 }
+
+/* -------------------------------
+   Background
+--------------------------------*/
+
+/* Add to the top of `style.css` (or merge into the existing :root / dark theme blocks) */
+:root {
+    --bg-overlay: rgba(255,255,255,0.55); /* light overlay */
+}
+
+body[data-theme="dark"] {
+    --bg-overlay: rgba(0,0,0,0.55); /* dark overlay */
+}
+
+/* Replace the existing body background rules in `style.css` with this */
+body {
+    background-color: var(--bg); /* fallback color */
+    /* gradient overlay first, then the image */
+    background-image:
+        linear-gradient(var(--bg-overlay), var(--bg-overlay)),
+        url('/static/background.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    color: var(--text);
+    font-family: "Inter", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Optional: slightly dim the container to improve readability */
+.container {
+    max-width: 600px;
+    margin: 60px auto;
+    text-align: center;
+    /* subtle backdrop to improve contrast */
+    background: rgba(255,255,255,0.02);
+    padding: 0 20px;
+}
+
+/* For dark theme, you may want a stronger container backdrop */
+body[data-theme="dark"] .container {
+    background: rgba(0,0,0,0.25);
+    border-radius: 12px;
+    padding: 20px;
+}
