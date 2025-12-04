@@ -27,9 +27,6 @@ def image_to_base64(image_bytes: bytes) -> str:
 def index():
     return render_template("index.html")
 
-@app.route("/robots.txt", methods=["GET"])
-def index():
-    return send_from_directory("static", "robots.txt")
 
 @app.route("/process", methods=["POST"])
 def process():
