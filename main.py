@@ -5,7 +5,8 @@ import requests
 import tempfile
 from pathlib import Path
 from urllib.parse import urlparse
-
+from PIL import Image, UnidentifiedImageError
+import io
 app = Flask(__name__)
 
 
@@ -30,7 +31,7 @@ def index():
 
 @app.route("/process", methods=["POST"])
 def process():
-    # TODO: Make checks to avoid pngs used for .pose and vice versa AKA SECURITY.. Don't be lazy
+
     # ----- IMAGE -----
     img_url = request.form.get("image_url", "").strip()
     img_file = request.files.get("image_file")
@@ -41,6 +42,17 @@ def process():
         image_bytes, _ = fetch_file_from_url(img_url)
     else:
         return "Error: No image provided (URL or file)", 400
+
+    # Verify image type using Pillow
+    try:
+        with Image.open(io.BytesIO(image_bytes)) as img:
+            img_format = (img.format or "").lower()
+    except UnidentifiedImageError:
+        return "Error: Provided image is not a supported image type", 400
+
+    allowed_img_types = {"png", "jpeg", "gif", "bmp", "webp"}
+    if img_format not in allowed_img_types:
+        return "Error: Provided image is not a supported image type", 400
 
     b64_str = image_to_base64(image_bytes)
 
@@ -59,7 +71,23 @@ def process():
     if not pose_filename:
         pose_filename = "updated.pose"
 
-    pose_json = json.loads(pose_bytes.decode("utf-8"))
+    # Require .pose extension
+    if not pose_filename.lower().endswith(".pose"):
+        return "Error: Pose file must have .pose extension", 400
+
+    # Ensure pose file is not an image
+    try:
+        with Image.open(io.BytesIO(pose_bytes)):
+            return "Error: Pose file appears to be an image; expected JSON .pose", 400
+    except UnidentifiedImageError:
+        pass
+
+    # Ensure pose file is valid JSON
+    try:
+        pose_json = json.loads(pose_bytes.decode("utf-8"))
+    except Exception:
+        return "Error: Pose file is not valid JSON", 400
+
     pose_json["Base64Image"] = b64_str
 
     temp = tempfile.NamedTemporaryFile(delete=False, suffix=".pose")
